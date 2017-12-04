@@ -29,9 +29,20 @@ public class GuiMainScreen implements ActionListener{
 
 
     public GuiMainScreen(OpenWeatherMap weatherMap){
+        String text = "";
+
         this.weatherMap = weatherMap;
         SetupFavorites();
-        weatherMap.SetOpenWeatherMap("zip=59102");
+        //Check if we have a default
+        if(favorites.size() > 0) {
+            try {
+                Integer.parseInt(favorites.get(0));
+                text = "zip=" + favorites.get(0);
+            } catch (Exception e) {
+                text = "q=" + favorites.get(0);
+            }
+            weatherMap.SetOpenWeatherMap(text);
+        }
         SetupFrame();   //Setup the default for our JFrame
 
         this.Repaint();
@@ -39,6 +50,7 @@ public class GuiMainScreen implements ActionListener{
 
     private void ResetWeather(String request){
         JFrame lastFrame = frame;
+        SetupFavorites();
         weatherMap.SetOpenWeatherMap(request);
         SetupFrame();
         Repaint();
@@ -59,7 +71,7 @@ public class GuiMainScreen implements ActionListener{
         gridPanel.setLayout(new GridBagLayout());
 
         frame.setTitle("Derek's Weather Application");  //Set the title of the frame/window
-        frame.setResizable(true);
+        frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   //Set our default close action
 
         gridPanel.setLayout(new GridBagLayout());
@@ -69,6 +81,9 @@ public class GuiMainScreen implements ActionListener{
         weatherConstraints.gridx = 0; weatherConstraints.gridy = 0;
         weatherConstraints.gridwidth = 100;
         gridPanel.add(WeatherLocation(), weatherConstraints);
+
+        if(weatherMap.GetCurrentWeatherBlock() == null)
+            return;
 
         GridBagConstraints leftConstraints = new GridBagConstraints();
         leftConstraints.gridx = 0; leftConstraints.gridy = 1;
@@ -174,8 +189,8 @@ public class GuiMainScreen implements ActionListener{
         addToFavorites.addActionListener(this);
         JButton removeFromFavorites = new JButton("Remove");
         removeFromFavorites.addActionListener(this);
-        JButton setAsDefault = new JButton("Set as Default");
-        setAsDefault.addActionListener(this);
+//        JButton setAsDefault = new JButton("Set as Default");
+//        setAsDefault.addActionListener(this);
 
         newPanel.add(searchButton);
         newPanel.add(currentLocation);
@@ -183,7 +198,7 @@ public class GuiMainScreen implements ActionListener{
         newPanel.add(locationDropDown);
         newPanel.add(addToFavorites);
         newPanel.add(removeFromFavorites);
-        newPanel.add(setAsDefault);
+//        newPanel.add(setAsDefault);
 
 
         return newPanel;
@@ -230,10 +245,10 @@ public class GuiMainScreen implements ActionListener{
 
             //Check if we are a zipcode or city
             try{
-                Integer.parseInt(this.locationDropDown.getSelectedItem().toString());
-                ResetWeather("zip=" + this.locationDropDown.getSelectedItem().toString());
+                Integer.parseInt(this.locationTextField.getText());
+                ResetWeather("zip=" + this.locationTextField.getText());
             }catch(Exception e){
-                ResetWeather("q=" + this.locationDropDown.getSelectedItem().toString());
+                ResetWeather("q=" + this.locationTextField.getText());
             }
         }
         if(event.getActionCommand() == "Remove"){
